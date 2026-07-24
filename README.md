@@ -56,7 +56,7 @@ Para bajar los servicios:
 docker compose down
 ```
 
-Dentro de Docker, `web` usa `http://api:3001` para hablar con el backend (definido como build arg `API_URL`).
+Dentro de Docker, `web` usa `http://api:3001` para hablar con el backend. Ese valor se inyecta como `API_URL` en el bloque `environment` del servicio `web` (no como build arg), por lo que la imagen es reutilizable y no requiere rebuild si cambia.
 
 ## Levantar sin Docker
 

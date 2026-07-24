@@ -52,9 +52,8 @@ export class GitHubService {
       'https://api.github.com',
     );
     this.token = this.config.get<string>('GITHUB_TOKEN');
-    this.timeoutMs = Number(
-      this.config.get<string>('GITHUB_TIMEOUT_MS') ?? 5000,
-    );
+    const parsed = Number(this.config.get<string>('GITHUB_TIMEOUT_MS'));
+    this.timeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed : 5000;
   }
 
   async getUser(username: string): Promise<GithubUserProfile> {

@@ -2,7 +2,8 @@
 node_modules
 .env
 .env.local
-*.log
 README.md
 Dockerfile
 .dockerignore
+.next/standalone
+.next/static

@@ -16,11 +16,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
-COPY --from=build /app/.next ./.next
+ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /app/public ./public
-COPY --from=build /app/next.config.ts ./
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
 EXPOSE 3000
 USER node
-CMD ["npx", "next", "start"]
+CMD ["node", "server.js"]
