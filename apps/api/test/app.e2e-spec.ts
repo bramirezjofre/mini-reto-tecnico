@@ -1,10 +1,10 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import { configureApp } from '../src/app.config';
 import { AppModule } from '../src/app.module';
 import { GitHubService, UserNotFoundError } from '../src/users/github.service';
-import { UsersExceptionFilter } from '../src/users/users-exception.filter';
 
 describe('GET /user/:username (e2e)', () => {
   let app: INestApplication<App>;
@@ -21,10 +21,7 @@ describe('GET /user/:username (e2e)', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalFilters(new UsersExceptionFilter());
-    app.useGlobalPipes(
-      new ValidationPipe({ transform: true, whitelist: true }),
-    );
+    configureApp(app);
     await app.init();
   });
 
