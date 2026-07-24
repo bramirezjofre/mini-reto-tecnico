@@ -2,30 +2,37 @@ services:
   api:
     build:
       context: ./apps/api
+    image: mini-reto-tecnico-api:latest
     container_name: mini-reto-api
     restart: unless-stopped
     environment:
       PORT: 3001
       GITHUB_API_BASE_URL: ${GITHUB_API_BASE_URL:-https://api.github.com}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      GITHUB_TIMEOUT_MS: ${GITHUB_TIMEOUT_MS:-5000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://web:3000}
     ports:
       - "3001:3001"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3001/user/octocat"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3001/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
+      start_period: 10s
 
   web:
     build:
       context: ./apps/web
       args:
-        NEXT_PUBLIC_API_URL: http://api:3001
         NEXT_PUBLIC_GITHUB_USERNAME: ${NEXT_PUBLIC_GITHUB_USERNAME:-bramirezjofre}
+    image: mini-reto-tecnico-web:latest
     container_name: mini-reto-web
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_started
+    environment:
+      API_URL: http://api:3001
+      NEXT_PUBLIC_GITHUB_USERNAME: ${NEXT_PUBLIC_GITHUB_USERNAME:-bramirezjofre}
     ports:
       - "3000:3000"

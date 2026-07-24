@@ -21,12 +21,21 @@ interface GithubRawUser {
 export class UserNotFoundError extends Error {
   constructor(username: string) {
     super(`GitHub user "${username}" not found`);
+    this.name = 'UserNotFoundError';
   }
 }
 
 export class GitHubUpstreamError extends Error {
   constructor(message: string) {
     super(message);
+    this.name = 'GitHubUpstreamError';
+  }
+}
+
+export class GitHubTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GitHubTimeoutError';
   }
 }
 
@@ -35,6 +44,7 @@ export class GitHubService {
   private readonly logger = new Logger(GitHubService.name);
   private readonly baseUrl: string;
   private readonly token: string | undefined;
+  private readonly timeoutMs: number;
 
   constructor(private readonly config: ConfigService) {
     this.baseUrl = this.config.get<string>(
@@ -42,6 +52,9 @@ export class GitHubService {
       'https://api.github.com',
     );
     this.token = this.config.get<string>('GITHUB_TOKEN');
+    this.timeoutMs = Number(
+      this.config.get<string>('GITHUB_TIMEOUT_MS') ?? 5000,
+    );
   }
 
   async getUser(username: string): Promise<GithubUserProfile> {
@@ -55,7 +68,22 @@ export class GitHubService {
       headers.Authorization = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(url, { headers });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers,
+        signal: AbortSignal.timeout(this.timeoutMs),
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'TimeoutError') {
+        throw new GitHubTimeoutError(
+          `GitHub API timed out after ${this.timeoutMs}ms for "${username}"`,
+        );
+      }
+      throw new GitHubUpstreamError(
+        `Failed to reach GitHub API: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
 
     if (response.status === 404) {
       throw new UserNotFoundError(username);

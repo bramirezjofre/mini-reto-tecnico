@@ -27,16 +27,14 @@ interface ApiError {
 
 function getConfig() {
   const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.API_URL;
   if (!username) {
     throw new Error(
       'NEXT_PUBLIC_GITHUB_USERNAME is not defined. Set it in apps/web/.env',
     );
   }
   if (!apiUrl) {
-    throw new Error(
-      'NEXT_PUBLIC_API_URL is not defined. Set it in apps/web/.env',
-    );
+    throw new Error('API_URL is not defined. Set it in apps/web/.env');
   }
   return { username, apiUrl };
 }
@@ -47,6 +45,7 @@ async function fetchProfile(
 ): Promise<GithubUserProfile> {
   const res = await fetch(`${apiUrl}/user/${encodeURIComponent(username)}`, {
     cache: 'no-store',
+    signal: AbortSignal.timeout(8000),
   });
   if (res.status === 404) {
     notFound();
@@ -83,7 +82,6 @@ export default async function HomePage() {
               height={96}
               className="rounded-full border border-black/[.08] dark:border-white/[.145]"
               priority
-              unoptimized
             />
           ) : null}
           <div className="flex-1 text-center sm:text-left">
@@ -153,7 +151,7 @@ export default async function HomePage() {
         </dl>
 
         <footer className="mt-8 text-center text-xs text-zinc-400">
-          Data fetched from your NestJS API at <code>{apiUrl}</code>
+          Data fetched server-side from your NestJS API
         </footer>
       </article>
     </main>

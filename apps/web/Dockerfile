@@ -5,9 +5,7 @@ RUN npm ci --no-audit --no-fund
 
 FROM node:24-alpine AS build
 WORKDIR /app
-ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_GITHUB_USERNAME
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_GITHUB_USERNAME=${NEXT_PUBLIC_GITHUB_USERNAME}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

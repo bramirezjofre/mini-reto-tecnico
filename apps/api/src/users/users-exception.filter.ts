@@ -7,7 +7,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { GitHubUpstreamError, UserNotFoundError } from './github.service';
+import {
+  GitHubTimeoutError,
+  GitHubUpstreamError,
+  UserNotFoundError,
+} from './github.service';
 
 @Catch()
 export class UsersExceptionFilter implements ExceptionFilter {
@@ -22,6 +26,15 @@ export class UsersExceptionFilter implements ExceptionFilter {
       response
         .status(HttpStatus.NOT_FOUND)
         .json({ statusCode: 404, message: exception.message });
+      return;
+    }
+
+    if (exception instanceof GitHubTimeoutError) {
+      this.logger.error(exception.message);
+      response.status(HttpStatus.GATEWAY_TIMEOUT).json({
+        statusCode: 504,
+        message: 'GitHub API timed out',
+      });
       return;
     }
 
