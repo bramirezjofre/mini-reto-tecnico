@@ -1,0 +1,17 @@
+# dependencies
+node_modules
+
+# build artifacts
+dist
+*.tsbuildinfo
+
+# environment
+.env
+.env.local
+!.env.example
+!.env*.example
+
+# misc
+.DS_Store
+*.log
+coverage
